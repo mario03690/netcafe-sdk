@@ -58,6 +58,36 @@ await nc.search('MCP 协议 2026');
 
 Markdown 里的 ` ```mermaid ` 代码块会被自动提取(`?block=2` 取第二张)。支持 25+ 种图表语言。
 
+## 每次调用到底花多少钱(真实账单数据,CC BY 4.0)
+
+厂商公布的都是「每百万 token 多少钱」。但一次调用花多少钱,取决于**模型自己愿意吐多少 token** ——
+同一道题,有的模型 16 个 token 收工,有的写 500 个。所以标价便宜的模型,实际单次调用未必便宜。
+
+我们把真实生产流量跑在同一个账号上,所以能公布这个平时没人公布的数:
+
+| 模型 | 每次调用实付 | 平均 token 进/出 | 样本数 |
+|---|---|---|---|
+| `deepseek-v4-flash` | **$0.001288** | 1413 / 547 | 133 |
+| `GLM5.2` | **$0.005288** | 1192 / 1230 | 69 |
+| `gpt-5.6-luna` | **$0.011836** | 4831 / 1661 | 21 |
+
+> 截至 2026-08-06,近 30 天共 233 次真实计费调用。
+> 样本数 < 10 的模型未列入上表(完整表见页面),只能当参考值。
+> 同期最贵与最便宜之间差 **9.2 倍**。
+
+```python
+nc.costs()          # → 按实付成本从低到高
+```
+
+```bash
+curl "https://ainetcafe.com/t/model_costs?days=30"     # 不装任何东西
+```
+
+- 人读版(含方法论与口径说明):<https://ainetcafe.com/costs>
+- JSON API,无需 key,CORS 开放:<https://ainetcafe.com/api/model-costs>
+
+数据以 CC BY 4.0 发布,引用请注明 "AI NetCafe real model cost dataset, https://ainetcafe.com/costs"。
+
 ## 全部能力
 
 | 方法 | 做什么 |
@@ -70,7 +100,8 @@ Markdown 里的 ` ```mermaid ` 代码块会被自动提取(`?block=2` 取第二�
 | `pdf` | 网页或 HTML → 打印级 PDF |
 | `translate` | 文本翻译 |
 | `ask` / `compare` | 单模型问答 / 多模型对比(含真实计量成本与延迟) |
-| `models` | 全部可调模型 + 每百万 token 单价 |
+| `models` | 全部可调模型 + 每百万 token 标价 |
+| `costs` | **每个模型「一次调用」的真实实付成本**(账单口径,非标价) |
 | `remember` / `recall` | **跨会话记忆**;带 Key 时跨设备、跨 agent 共享 |
 | `build` | **一句话造一个真正在线的应用**,约 100 秒返回 HTTPS 网址,归你所有 |
 
@@ -91,7 +122,7 @@ Markdown 里的 ` ```mermaid ` 代码块会被自动提取(`?block=2` 取第二�
 claude mcp add --transport http ai-netcafe https://ainetcafe.com/mcp
 ```
 
-22 个工具会直接出现在 Claude Code / Cursor 里。文档:https://ainetcafe.com/mcp.html
+23 个工具会直接出现在 Claude Code / Cursor 里。文档:https://ainetcafe.com/mcp.html
 
 ## 许可
 

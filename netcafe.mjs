@@ -72,6 +72,8 @@ export class NetCafe {
   async pdf({ url, html } = {}) { return (await this.#get('convert_to_pdf', { url, html })).pdf_url; }
   async translate(text, target = 'zh') { return (await this.#get('translate_text', { text, target })).translated || ''; }
   async models(tier) { return (await this.#get('list_models', { tier })).models || []; }
+  /** 每个模型「一次调用」的真实美元成本(来自平台账单,非厂商标价)。CC BY 4.0。 */
+  async costs(days = 30) { return (await this.#get('model_costs', { days })).models || []; }
   async ask(prompt, { model, maxTokens } = {}) { return this.#get('ask_model', { prompt, model, max_tokens: maxTokens }); }
   async compare(prompt, models) { return this.#get('compare_models', { prompt, models: models?.join(',') }); }
   // —— 写入/长任务 ——

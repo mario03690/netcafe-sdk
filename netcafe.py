@@ -131,6 +131,15 @@ class NetCafe:
         """全部可调模型 + 每百万 token 单价,按成本选型用。"""
         return self._get("list_models", tier=tier).get("models", [])
 
+    def costs(self, days=30):
+        """每个模型「一次调用」的真实美元成本,来自平台账单而非厂商标价。
+
+        厂商只公布每百万 token 的报价,但一次调用花多少钱取决于模型愿意吐多少
+        token —— 同一道题不同模型能差一个数量级。每行带 sample_size 与置信标注。
+        数据 CC BY 4.0,人读版 https://ainetcafe.com/costs
+        """
+        return self._get("model_costs", days=days).get("models", [])
+
     def ask(self, prompt, model=None, max_tokens=None):
         """单模型问答。返回 dict:answer / cost_usd / latency_ms。"""
         return self._get("ask_model", prompt=prompt, model=model, max_tokens=max_tokens)
