@@ -124,6 +124,8 @@ curl "https://ainetcafe.com/t/model_costs?days=30"     # 不装任何东西
 
 - 人读版(含方法论与口径说明):<https://ainetcafe.com/costs>
 - JSON API,无需 key,CORS 开放:<https://ainetcafe.com/api/model-costs>
+- 原始记录 CSV(每一次探针,含失败的和被剔除的):<https://ainetcafe.com/api/model-costs/raw.csv>
+- Hugging Face 镜像,每晚刷新:<https://huggingface.co/datasets/mario0369/llm-cost-same-prompt>
   - `standard_bench` = 同题可比口径,选型看这个
   - `production_mixed` = 真实生产流量的实付,但各模型跑的题不同,**不能横向相除**
 
