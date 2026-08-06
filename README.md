@@ -3,6 +3,17 @@
 不用注册、不用密钥就能开始:匿名有免费额度,**每次调用都会告诉你花了多少钱**。
 额度不够时传一把 [AllRouter](https://allrouter.ai/register?aff=qjpC&utm_source=sdk&utm_medium=github) Key 进来,调用方式完全不变。
 
+```mermaid
+graph LR
+  A["你的 Agent"] -->|一个 URL| B["ainetcafe.com"]
+  B --> C["搜索 / 读网页 / 图表"]
+  B --> D["转写 / 语法 / PDF"]
+  B --> E["跨会话记忆"]
+  B --> F["build: 一句话造应用并上线"]
+```
+
+> 上面这张图本身就是用本 SDK 渲染的 —— 见下方「把图表直接写进 README」。
+
 ## 30 秒上手
 
 ```bash
