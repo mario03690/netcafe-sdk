@@ -1,0 +1,25 @@
+# 每晚把成本数据同步到 Hugging Face。
+#
+# 为什么放 GitHub Actions 而不是我们自己的服务器:实测那台机到 huggingface.co 完全不通
+# (15 秒超时)。放本地 Mac 又要靠它开着。Actions 在云上跑,HF 可达,而且不依赖任何一台
+# 特定机器 —— 数据本身从我们的公开接口读,所以这个 job 里没有任何服务器凭据。
+#
+# 时间:UTC 19:00 = 北京时间凌晨 3:00,排在成本探针(2:20)之后,取到的是当晚最新的数。
+name: sync-hf-dataset
+
+on:
+  schedule:
+    - cron: '0 19 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Build and push dataset
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: node scripts/sync-hf-dataset.mjs
