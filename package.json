@@ -1,0 +1,13 @@
+{
+  "name": "netcafe-sdk",
+  "version": "1.0.0",
+  "description": "Zero-dependency toolbox for AI agents: web search, page-to-markdown, diagrams, transcription, PDF, cross-session memory, and one-sentence app deployment.",
+  "type": "module",
+  "main": "netcafe.mjs",
+  "exports": { ".": "./netcafe.mjs" },
+  "files": ["netcafe.mjs", "netcafe.py", "README.md"],
+  "keywords": ["ai", "agent", "mcp", "llm", "tools", "mermaid", "whisper", "web-search", "agent-tools"],
+  "license": "MIT",
+  "homepage": "https://ainetcafe.com/mcp.html",
+  "repository": { "type": "git", "url": "git+https://github.com/mario03690/netcafe-sdk.git" }
+}
