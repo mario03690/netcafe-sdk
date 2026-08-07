@@ -15,14 +15,18 @@
  *
  * 全部工具:https://ainetcafe.com/mcp.html
  */
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.1';
 const BASE = 'https://ainetcafe.com';
 
 export class NetCafeError extends Error {
   constructor(message, payload = {}) {
-    super(message);
+    // message 里带上给人看的出路:撞墙后 agent 的默认行为是默默重试,
+    // 结构化字段人看不到,异常打印的那一行是唯一保证到人眼前的位置。
+    const extra = payload.tell_your_human;
+    super(extra && !String(message).includes(extra) ? `${message}\n>>> ${extra}` : message);
     this.name = 'NetCafeError';
     this.payload = payload;
+    this.pairUrl = payload.pair_url;
     this.howToContinue = payload.how_to_continue;
     this.tellYourHuman = payload.tell_your_human;
   }

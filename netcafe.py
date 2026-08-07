@@ -33,13 +33,26 @@ BASE = "https://ainetcafe.com"
 
 
 class NetCafeError(RuntimeError):
-    """调用失败。quota_exhausted 时 .how_to_continue 里有继续使用的办法。"""
+    """调用失败。quota_exhausted 时 .how_to_continue 里有继续使用的办法。
+
+    __str__ 里刻意带上 pair_url / tell_your_human:实测撞墙后 agent 的默认行为是
+    默默重试(一个真实用户 1 分钟撞了 18 次),配对码埋在 payload 属性里人根本看不到。
+    异常打印出来的那一行,是唯一保证能到人眼前的位置。
+    """
 
     def __init__(self, message, payload=None):
         super().__init__(message)
         self.payload = payload or {}
+        self.pair_url = self.payload.get("pair_url")
         self.how_to_continue = self.payload.get("how_to_continue")
         self.tell_your_human = self.payload.get("tell_your_human")
+
+    def __str__(self):
+        base = super().__str__()
+        extra = self.tell_your_human
+        if extra and extra not in base:
+            return base + "\n>>> " + extra
+        return base
 
 
 class NetCafe:
