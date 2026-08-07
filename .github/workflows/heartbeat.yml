@@ -38,12 +38,13 @@ jobs:
             printf '  %-40s %s\n' "$u" "$c"
             [ "$c" = "200" ] || fail=1
           done
-          # 长图表:maxParamLength 那个 bug 让所有真实尺寸的图 404 过,回归检查钉住它
-          long=$(python3 -c "
-import base64
-src='graph TD\n'+'\n'.join(f'  N{i}[\"node {i} with a longer label\"] --> N{i+1}' for i in range(20))
-print(base64.urlsafe_b64encode(src.encode()).decode().rstrip('='))")
+          # 长图表回归:maxParamLength 默认 100 时,所有真实尺寸的图都 404,
+          # 而自测用的示例图太短一直没暴露。这里钉一个 1000+ 字符的编码源。
+          long=$(printf 'graph TD\n' > /tmp/d.txt; for i in $(seq 0 19); do \
+            printf '  N%s["node %s with a longer label"] --> N%s\n' "$i" "$i" "$((i+1))" >> /tmp/d.txt; done; \
+            base64 -w0 /tmp/d.txt | tr '+/' '-_' | tr -d '=')
+          echo "  编码长度 ${#long}"
           c=$(curl -s -o /dev/null -w '%{http_code}' -m 30 "https://ainetcafe.com/i/mermaid/$long" || echo 000)
-          printf '  %-40s %s\n' "长图表(1000+ 字符)" "$c"
+          printf '  %-40s %s\n' "long diagram (1000+ chars)" "$c"
           [ "$c" = "200" ] || fail=1
           [ "$fail" = "0" ] || { echo "::error::有对外入口不可用"; exit 1; }
