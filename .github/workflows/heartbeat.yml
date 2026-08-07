@@ -1,0 +1,49 @@
+# 外部心跳:每天检查 ainetcafe.com 的定时任务是不是还在跑。
+#
+# 为什么必须放在外面:2026-08-07 查出全站定时任务已经静默死了 4 天。发现不了的原因很简单——
+# 我们所有的自检脚本(增长循环、模型体检、golden-probe)本身就是靠同一个调度器跑的,
+# 调度器一死,它们全都不跑了,于是"负责报警的东西"和"出问题的东西"是同一批。
+#
+# 这个 job 跑在 GitHub 的机器上,和我们的服务器无关,所以它不会跟着一起死。
+name: heartbeat
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scheduler heartbeat
+        run: |
+          echo "== 定时任务新鲜度 =="
+          code=$(curl -s -o /tmp/h.json -w '%{http_code}' -m 30 \
+            https://ainetcafe.com/api/health/scheduler || echo 000)
+          cat /tmp/h.json | python3 -m json.tool || true
+          if [ "$code" != "200" ]; then
+            echo "::error::定时任务有停摆($code)。看上面 stale_jobs。"
+            exit 1
+          fi
+          echo "全部任务新鲜"
+
+      - name: Core surfaces reachable
+        run: |
+          fail=0
+          for u in /llms.txt /mcp.html /costs /api/model-costs \
+                   /t/list_models "/i/mermaid/Z3JhcGggVEQ7IEEtLT5C" \
+                   /.well-known/mcp.json /agent-capabilities.json; do
+            c=$(curl -s -o /dev/null -w '%{http_code}' -m 30 "https://ainetcafe.com$u" || echo 000)
+            printf '  %-40s %s\n' "$u" "$c"
+            [ "$c" = "200" ] || fail=1
+          done
+          # 长图表:maxParamLength 那个 bug 让所有真实尺寸的图 404 过,回归检查钉住它
+          long=$(python3 -c "
+import base64
+src='graph TD\n'+'\n'.join(f'  N{i}[\"node {i} with a longer label\"] --> N{i+1}' for i in range(20))
+print(base64.urlsafe_b64encode(src.encode()).decode().rstrip('='))")
+          c=$(curl -s -o /dev/null -w '%{http_code}' -m 30 "https://ainetcafe.com/i/mermaid/$long" || echo 000)
+          printf '  %-40s %s\n' "长图表(1000+ 字符)" "$c"
+          [ "$c" = "200" ] || fail=1
+          [ "$fail" = "0" ] || { echo "::error::有对外入口不可用"; exit 1; }
