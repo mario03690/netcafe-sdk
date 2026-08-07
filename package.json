@@ -1,6 +1,6 @@
 {
   "name": "netcafe-sdk",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Zero-dependency toolbox for AI agents: web search, page-to-markdown, diagrams, transcription, PDF, cross-session memory, and one-sentence app deployment, plus a real per-call model cost dataset (CC BY 4.0).",
   "type": "module",
   "main": "netcafe.mjs",
