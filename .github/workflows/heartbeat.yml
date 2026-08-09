@@ -9,11 +9,37 @@ name: heartbeat
 
 on:
   schedule:
+    # 可用性探测每 15 分钟(2026-08-09 教训:整机负载打满导致对外 530 约 20 分钟,
+    # 而当时心跳一天只查一次 04:00 UTC,窗口 01:42-02:05 UTC 完全错过——
+    # 爬虫和 agent 调用那段时间全部打空,而我们事后才知道)。仓库 public,Actions 免费。
+    - cron: '*/15 * * * *'
+    # 完整巡检(定时任务新鲜度 + 全部对外入口 + 长图回归)仍每天一次,避免噪音
     - cron: '0 4 * * *'
   workflow_dispatch: {}
 
 jobs:
+  # 轻量可用性:每次都跑。连续失败才算故障——单次抖动不刷邮件。
+  uptime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reachability (3 tries)
+        run: |
+          ok=0
+          for i in 1 2 3; do
+            c=$(curl -s -o /tmp/r.txt -w '%{http_code}' -m 20 https://ainetcafe.com/healthz || echo 000)
+            echo "  try$i -> $c"
+            if [ "$c" = "200" ] && grep -q '"ok":true' /tmp/r.txt; then ok=1; break; fi
+            [ $i -lt 3 ] && sleep 20
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::error::ainetcafe.com 连续 3 次不可达(间隔 20s)。多为整机负载打满或隧道断。"
+            exit 1
+          fi
+          echo "对外可达"
+
   check:
+    # 完整巡检只在每日那一班跑,15 分钟班次跳过
+    if: github.event.schedule != '*/15 * * * *'
     runs-on: ubuntu-latest
     steps:
       - name: Scheduler heartbeat
